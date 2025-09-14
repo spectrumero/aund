@@ -1,3 +1,5 @@
+# aund
+
 aund is a program to allow a Unix system to act as an AUN or Econet
 fileserver.  It supports:
 
@@ -18,8 +20,22 @@ fileserver.  It supports:
 * REMUSER command has been implemented.  This does not remove the user
   files or directory structure.
 
-For general installation instructions, see the INSTALL file.  aund is
-not particularly portable, and expects a BSDish or GNUish C library.
+## Building
+
+For a normal build (e.g on Linux):
+
+```
+cmake -B build -D CMAKE_INSTALL_PREFIX=/where/you/want/it/to/be/installed
+cmake --build build
+cmake --install build
+```
+
+The install step will install into the install prefix, under bin, man/man5, man/man8
+and etc (for aund.conf).
+
+## Notes
+
+aund is not particularly portable, and expects a BSDish or GNUish C library.
 Building it on other systems is likely to be unpleasant.
 
 aund is highly experimental and likely to have bugs.  Patches to fix
@@ -60,5 +76,3 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Various parts of its build system are derived from Automake, and these
-have their own copyright information embedded in them.
