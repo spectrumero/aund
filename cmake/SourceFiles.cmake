@@ -17,5 +17,8 @@ set(SOURCE_FILES
    user_null.c
 )
 
+# This adds a path to the generated config.h
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

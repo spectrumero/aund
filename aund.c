@@ -46,6 +46,7 @@
 #include "aun.h"
 #include "extern.h"
 #include "fileserver.h"
+#include "config.h"
 
 #define EC_PORT_FS 0x99
 
@@ -100,7 +101,7 @@ dopidfile(char const *pidfile)
 int
 main(int argc, char *argv[])
 {
-    char const *conffile = "/etc/aund.conf";
+    char const *conffile = AUND_CONFIG;
     char const *pidfile = "/var/run/aund.pid";
     int c;
     #ifdef __APPLE__

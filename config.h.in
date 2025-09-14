@@ -1,0 +1,3 @@
+// Location of the configuration file when installed
+#cmakedefine AUND_CONFIG "@AUND_CONFIG@"
+
