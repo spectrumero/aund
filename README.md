@@ -48,10 +48,11 @@ uses has serious security flaws.  In short, keep it off the Internet.
 
 aund itself is released under the following licence:
 
-Copyright (c) 1998, 2010 Ben Harris
-Copyright (c) 2010 Simon Tatham
-Copyright (c) 2010 James Woodcock
-Copyright (c) 2015, 2021 Steve Inglis
+* Copyright (c) 1998, 2010 Ben Harris
+* Copyright (c) 2010 Simon Tatham
+* Copyright (c) 2010 James Woodcock
+* Copyright (c) 2015, 2021 Steve Inglis
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
