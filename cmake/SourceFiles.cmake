@@ -1,7 +1,6 @@
 set(SOURCE_FILES
    src/aun.c
    src/aund.c
-   src/conf_lex.c
    src/fileserver.c
    src/fs_cli.c
    src/fs_error.c
@@ -18,6 +17,10 @@ set(SOURCE_FILES
 
 if(ENABLE_BEEBEM)
    list(APPEND SOURCE_FILES src/beebem.c)
+endif()
+
+if(ENABLE_FULL_CFGFILE)
+   list(APPEND SOURCE_FILES src/conf_lex.c)
 endif()
 
 # This adds a path to the generated config.h

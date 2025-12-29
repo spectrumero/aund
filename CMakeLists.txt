@@ -10,19 +10,23 @@ if(NOT DEFINED AUND_BUILD)
    set(AUND_BUILD standard)
 endif ()
 
+option(ENABLE_BEEBEM "Enable BeebEm style networking" ON)
+option(ENABLE_FULL_CFGFILE "Enable full configuration file" ON)
+option(USE_CRYPT "Use crypt for pwfile" ON)
+
 if(${AUND_BUILD} STREQUAL "standard")
    message(STATUS "Building standard aund")
-   option(USE_CRYPT "Use crypt for pwfile" ON)
 
 elseif (${AUND_BUILD} STREQUAL "femto")
    message(STATUS "Building Femto aund")
    set(FEMTO 1)
+   set(ENABLE_BEEBEM OFF)
+   set(USE_CRYPT OFF)
+   set(ENABLE_FULL_CFGFILE OFF)
 
 else ()
    message(FATAL_ERROR "Unknown aund build type")
 endif ()
-
-option(ENABLE_BEEBEM "Enable BeebEm style networking" ON)
 
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "08")

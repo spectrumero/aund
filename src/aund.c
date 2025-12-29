@@ -144,7 +144,10 @@ main(int argc, char *argv[])
     }
 
     sig_init();
+#ifdef ENABLE_FULL_CFGFILE
+    // TODO: abbreviated config file
     conf_init(conffile);
+#endif
 #ifdef ENABLE_BEEBEM
     if (beebem_cfg_file)
         aunfuncs = &beebem;
