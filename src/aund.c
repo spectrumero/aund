@@ -50,12 +50,17 @@
 
 #define EC_PORT_FS 0x99
 
-extern const struct aun_funcs aun, beebem;
+extern const struct aun_funcs aun;
+#ifdef ENABLE_BEEBEM
+extern const struct aun_funcs beebem;
+#endif
 
 int debug = 0;
 int foreground = 0;
 int using_syslog = 1;
+#ifdef ENABLE_BEEBEM
 char *beebem_cfg_file = NULL;
+#endif
 const struct aun_funcs *aunfuncs = &aun;
 char *progname;
 int default_fsstation = 254;
@@ -140,8 +145,10 @@ main(int argc, char *argv[])
 
     sig_init();
     conf_init(conffile);
+#ifdef ENABLE_BEEBEM
     if (beebem_cfg_file)
         aunfuncs = &beebem;
+#endif
 
     fs_init();
 
@@ -182,8 +189,10 @@ main(int argc, char *argv[])
         syslog(LOG_NOTICE, "started");
     }
     dopidfile(pidfile);
+#ifdef ENABLE_BEEBEM
     if (debug)
         printf("started as fileserver at station [%d]\n", our_econet_addr);
+#endif
 
     for (; !painful_death;) {
         ssize_t msgsize;

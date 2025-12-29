@@ -22,6 +22,8 @@ else ()
    message(FATAL_ERROR "Unknown aund build type")
 endif ()
 
+option(ENABLE_BEEBEM "Enable BeebEm style networking" ON)
+
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "08")
 set(VERSION_PATCH "1")

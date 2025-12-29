@@ -49,6 +49,7 @@
 
 #include "extern.h"
 #include "fileserver.h"
+#include "config.h"
 
 #ifndef S_IFIFO
 #define S_IFIFO 0
@@ -319,6 +320,7 @@ conf_cmd_lib(union cfything *thing)
 	strcpy(lib, cfytext);
 }
 
+#ifdef ENABLE_BEEBEM
 static void
 conf_cmd_beebem(union cfything *thing)
 {
@@ -338,6 +340,12 @@ conf_cmd_beebem(union cfything *thing)
 			errx(1, "unrecognised beebem option: '%s'", cfytext);
 	}
 }
+#else
+static void
+conf_cmd_beebem(union cfything *thing)
+{
+}
+#endif
 
 static void
 conf_cmd_infofmt(union cfything *thing)
@@ -377,6 +385,7 @@ conf_cmd_fsstation(union cfything *thing)
 {
     char *endptr;
 
+#ifdef ENABLE_BEEBEM
     our_econet_addr = 254;
 
     if (cfylex(BORING, NULL) != CF_WORD)
@@ -384,6 +393,7 @@ conf_cmd_fsstation(union cfything *thing)
     our_econet_addr = strtol(cfytext, &endptr, 0);
     if (*endptr != '\0')
         errx(1, "Bad FS Station Number");
+#endif
 }
 
 static void

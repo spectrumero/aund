@@ -4,3 +4,5 @@
 // Are we building the Femto aund?
 #cmakedefine FEMTO "@FEMTO@"
 
+#cmakedefine ENABLE_BEEBEM
+

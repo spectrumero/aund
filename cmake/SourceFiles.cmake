@@ -1,7 +1,6 @@
 set(SOURCE_FILES
    src/aun.c
    src/aund.c
-   src/beebem.c
    src/conf_lex.c
    src/fileserver.c
    src/fs_cli.c
@@ -16,6 +15,10 @@ set(SOURCE_FILES
    src/pw.c
    src/user_null.c
 )
+
+if(ENABLE_BEEBEM)
+   list(APPEND SOURCE_FILES src/beebem.c)
+endif()
 
 # This adds a path to the generated config.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
