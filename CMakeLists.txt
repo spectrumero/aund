@@ -6,7 +6,21 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
    message(FATAL_ERROR "Prevented in-tree build. Please create a build directory, e.g. use cmake -B build")
 endif ()
 
-option(USE_CRYPT "Use crypt for pwfile" ON)
+if(NOT DEFINED AUND_BUILD)
+   set(AUND_BUILD standard)
+endif ()
+
+if(${AUND_BUILD} STREQUAL "standard")
+   message(STATUS "Building standard aund")
+   option(USE_CRYPT "Use crypt for pwfile" ON)
+
+elseif (${AUND_BUILD} STREQUAL "femto")
+   message(STATUS "Building Femto aund")
+   set(FEMTO 1)
+
+else ()
+   message(FATAL_ERROR "Unknown aund build type")
+endif ()
 
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "08")

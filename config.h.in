@@ -1,3 +1,6 @@
 // Location of the configuration file when installed
 #cmakedefine AUND_CONFIG "@AUND_CONFIG@"
 
+// Are we building the Femto aund?
+#cmakedefine FEMTO "@FEMTO@"
+
