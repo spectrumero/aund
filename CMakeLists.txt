@@ -38,5 +38,5 @@ include(cmake/SourceFiles.cmake)
 include(cmake/Dependencies.cmake)
 include(cmake/Install.cmake)
 
-configure_file(config.h.in config.h)
+configure_file(src/config.h.in config.h)
 

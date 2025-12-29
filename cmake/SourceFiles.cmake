@@ -1,20 +1,20 @@
 set(SOURCE_FILES
-   aun.c
-   aund.c
-   beebem.c
-   conf_lex.c
-   fileserver.c
-   fs_cli.c
-   fs_error.c
-   fs_examine.c
-   fs_fileio.c
-   fs_filetype.c
-   fs_handle.c
-   fs_misc.c
-   fs_nametrans.c
-   fs_util.c
-   pw.c
-   user_null.c
+   src/aun.c
+   src/aund.c
+   src/beebem.c
+   src/conf_lex.c
+   src/fileserver.c
+   src/fs_cli.c
+   src/fs_error.c
+   src/fs_examine.c
+   src/fs_fileio.c
+   src/fs_filetype.c
+   src/fs_handle.c
+   src/fs_misc.c
+   src/fs_nametrans.c
+   src/fs_util.c
+   src/pw.c
+   src/user_null.c
 )
 
 # This adds a path to the generated config.h
