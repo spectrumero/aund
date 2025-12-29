@@ -12,6 +12,7 @@ endif ()
 
 option(ENABLE_BEEBEM "Enable BeebEm style networking" ON)
 option(ENABLE_FULL_CFGFILE "Enable full configuration file" ON)
+option(ENABLE_USERS "Enable user file" ON)
 option(USE_CRYPT "Use crypt for pwfile" ON)
 
 if(${AUND_BUILD} STREQUAL "standard")

@@ -11,7 +11,6 @@ set(SOURCE_FILES
    src/fs_misc.c
    src/fs_nametrans.c
    src/fs_util.c
-   src/pw.c
    src/user_null.c
 )
 
@@ -21,6 +20,10 @@ endif()
 
 if(ENABLE_FULL_CFGFILE)
    list(APPEND SOURCE_FILES src/conf_lex.c)
+endif()
+
+if(ENABLE_USERS)
+   list(APPEND SOURCE_FILES src/pw.c)
 endif()
 
 # This adds a path to the generated config.h

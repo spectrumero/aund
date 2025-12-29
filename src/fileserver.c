@@ -72,7 +72,7 @@ fs_init(void)
     else
         fullname[MAXHOSTNAMELEN - 1] = '\0'; /* paranoia */
     strcpy(discname, fullname);
-
+#ifdef ENABLE_USERS
     if (!fixedurd && !pwfile)
         errx(1,
             "must specify either 'urd' or 'pwfile' in configuration");
@@ -80,6 +80,9 @@ fs_init(void)
         userfuncs = &user_pw;
     else
         userfuncs = &user_null;
+#else
+    userfuncs = &user_null;
+#endif
 }
 
 #if 0
