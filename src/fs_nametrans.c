@@ -48,6 +48,7 @@
 #include "extern.h"
 #include "fileserver.h"
 #include "fs_errors.h"
+#include "log.h"
 
 static char *fs_unhat_path(char *);
 static void fs_match_path(char *);
@@ -63,7 +64,7 @@ fs_acornify_name(char *name)
 	size_t len;
 	char *p, *q;
 
-	if (debug) printf("fs_acornify_name: [%s]", name);
+	logdbg("fs_acornify_name: [%s]", name);
 	p = q = name;
 	if (*p == '.' && !p[1])
 		p++;			/* map "." to the empty string */
@@ -77,7 +78,7 @@ fs_acornify_name(char *name)
 		name[len-4] = '\0';
 	else
 		name[len] = '\0';
-	if (debug) printf("->[%s]\n", name);
+	logdbg("->[%s]\n", name);
 	return name;
 }
 
@@ -163,7 +164,7 @@ fs_unixify_path(struct fs_context *c, char *path)
 		return NULL;
 	}
 
-	if (debug) printf("fs_unixify_path: [%s]", path);
+	logdbg("fs_unixify_path: [%s]", path);
 
 	/* By default, resolve things from the CSD. */
 	base = csd;
@@ -219,14 +220,14 @@ fs_unixify_path(struct fs_context *c, char *path)
 	 */
 	fs_trans_simple(path2 + strlen(path2), path);
 
-	if (debug) printf("->[%s]", path2);
+	logdbg("->[%s]", path2);
 
 	/*
 	 * Unhat.
 	 */
 	fs_unhat_path(path2);
 
-	if (debug) printf("->[%s]", path2);
+	logdbg("->[%s]", path2);
 
 	/*
 	 * References directly to the root dir: turn an empty name
@@ -256,7 +257,7 @@ fs_unixify_path(struct fs_context *c, char *path)
 		}
 	}
 	*q = '\0';
-	if (debug) printf("->[%s]\n", path3);
+	logdbg("->[%s]\n", path3);
 
 	free(path2);
 	path3 = realloc(path3, 1 + strlen(path3));

@@ -47,12 +47,18 @@
 #include "extern.h"
 #include "fileserver.h"
 #include "config.h"
+#include "log.h"
 
 #define EC_PORT_FS 0x99
 
+#ifdef ENABLE_AUN
 extern const struct aun_funcs aun;
+#endif
 #ifdef ENABLE_BEEBEM
 extern const struct aun_funcs beebem;
+#endif
+#ifdef ENABLE_FEMTO_ECONET
+extern const struct aun_funcs femto_econet;
 #endif
 
 int debug = 0;
@@ -61,7 +67,12 @@ int using_syslog = 1;
 #ifdef ENABLE_BEEBEM
 char *beebem_cfg_file = NULL;
 #endif
+#ifdef ENABLE_AUN
 const struct aun_funcs *aunfuncs = &aun;
+#endif
+#ifdef ENABLE_FEMTO_ECONET
+const struct aun_funcs *aunfuncs = &femto_econet;
+#endif
 char *progname;
 int default_fsstation = 254;
 
@@ -193,8 +204,7 @@ main(int argc, char *argv[])
     }
     dopidfile(pidfile);
 #ifdef ENABLE_BEEBEM
-    if (debug)
-        printf("started as fileserver at station [%d]\n", our_econet_addr);
+    logdbg("started as fileserver at station [%d]\n", our_econet_addr);
 #endif
 
     for (; !painful_death;) {
@@ -207,14 +217,14 @@ main(int argc, char *argv[])
 
         switch (pkt->dest_port) {
         case EC_PORT_FS:
-            if (debug) printf("\n\t(file server: ");
+            logdbg("\n\t(file server: ");
             file_server(pkt, msgsize, &from);
-            if (debug) printf(")");
+            logdbg(")");
             break;
         default:
             assert(!"Packet received from wrong port");
         }
-        if (debug) printf("\n");
+        logdbg("\n");
     }
     return 0;
 }

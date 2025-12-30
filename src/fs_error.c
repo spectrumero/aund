@@ -43,6 +43,7 @@
 #include "fileserver.h"
 #include "fs_proto.h"
 #include "fs_errors.h"
+#include "log.h"
 
 const static struct {
     int errnoval;
@@ -160,7 +161,7 @@ fs_error(struct fs_context *c, uint8_t err, const char *report)
     reply->return_code = err;
     strcpy(reply->data, report);
     *strchr(reply->data, '\0') = 13;
-    if (debug) printf("fs_error: 0x%x/%s\n", err, report);
+    logdbg("fs_error: 0x%x/%s\n", err, report);
     fs_reply(c, reply, sizeof(*reply) + strlen(report) + 1);
     free(reply);
 }

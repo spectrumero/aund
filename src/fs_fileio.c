@@ -53,6 +53,7 @@
 #include "fs_errors.h"
 #include "extern.h"
 #include "fileserver.h"
+#include "log.h"
 
 #define OUR_DATA_PORT 0x97
 
@@ -102,7 +103,7 @@ fs_open(struct fs_context *c)
     }
     request = (struct ec_fs_req_open *)(c->req);
     request->path[strcspn(request->path, "\r")] = '\0';
-    if (debug) printf("open [%s/%s, %s]\n",
+    logdbg("open [%s/%s, %s]\n",
         request->must_exist ? "exist":"create",
         request->read_only ? "read":"rdwr", request->path);
     upath = fs_unixify_path(c, request->path);
@@ -260,7 +261,7 @@ fs_close(struct fs_context *c)
         return;
     }
     request = (struct ec_fs_req_close *)(c->req);
-    if (debug) printf("close [%d]\n", request->handle);
+    logdbg("close [%d]\n", request->handle);
     if (request->handle == 0) {
         error = 0;
         for (h = 1; h < c->client->nhandles; h++)
@@ -326,14 +327,14 @@ fs_get_args(struct fs_context *c)
         request = (struct ec_fs_req_get_args *)(c->req);
         handle = request->handle;
         arg = request->arg;
-        if (debug) printf("get args [%d, %d]", handle, arg);
+        logdbg("get args [%d, %d]", handle, arg);
     } else {
         struct ec_fs_req_get_args_32 *request_32;
 
         request_32 = (struct ec_fs_req_get_args_32 *)(c->req);
         handle = request_32->handle;
         arg = request_32->arg;
-        if (debug) printf("get args 32 [%d, %d]", handle, arg);
+        logdbg("get args 32 [%d, %d]", handle, arg);
         is_32 = true;
     }
     if ((h = fs_check_handle(c->client, handle)) != 0) {
@@ -372,21 +373,19 @@ fs_get_args(struct fs_context *c)
                     sizeof(reply.val));
             break;
         default:
-            if (debug) printf("\n");
+            logdbg("\n");
             fs_err(c, EC_FS_E_BADARGS);
             return;
         }
         // Differences between apple uint64_t and linux
         // removes complier warning
         #ifdef __APPLE__
-        if (debug)
-            printf(" <- %llu\n",
+        logdbg(" <- %llu\n",
                 fs_read_val(reply.val, sizeof(reply.val)));
         #endif
             
         #ifdef __LINUX__
-        if (debug)
-            printf(" <- %lu\n",
+        logdbg(" <- %lu\n",
                 fs_read_val(reply.val, sizeof(reply.val)));
         #endif    
 
@@ -424,8 +423,7 @@ fs_set_args(struct fs_context *c)
         val = fs_read_val(request->val, sizeof(request->val));
         handle = request->handle;
         arg = request->arg;
-        if (debug)
-            printf("set args [%d, %d := %ju]\n",
+        logdbg("set args [%d, %d := %ju]\n",
                 request->handle, request->arg, (uintmax_t)val);
     } else {
         struct ec_fs_req_set_args_32 *request_32;
@@ -434,8 +432,7 @@ fs_set_args(struct fs_context *c)
         val = fs_read_val(request_32->val, sizeof(request_32->val));
         handle = request_32->handle;
         arg = request_32->arg;
-        if (debug)
-            printf("set args 32 [%d, %d := %ju]\n",
+        logdbg("set args 32 [%d, %d := %ju]\n",
                 request_32->handle, request_32->arg, (uintmax_t)val);
     }
     if ((h = fs_check_handle(c->client, handle)) != 0) {
@@ -491,7 +488,7 @@ fs_randomio_common(struct fs_context *c, int h)
         c->client->handles[h]->sequence = (c->req->aun.flag & 1);
     } else {
         /* This is a repeated request. */
-        if (debug) printf("<repeat>");
+        logdbg("<repeat>");
         off = c->client->handles[h]->oldoffset;
         if (lseek(fd, off, SEEK_SET) == -1) {
             fs_errno(c);
@@ -513,8 +510,7 @@ fs_putbyte(struct fs_context *c)
         return;
     }
     request = (struct ec_fs_req_putbyte *)(c->req);
-    if (debug)
-        printf("putbyte [%d, 0x%02x]\n",
+    logdbg("putbyte [%d, 0x%02x]\n",
             request->handle, request->byte);
     if ((h = fs_check_handle(c->client, request->handle)) != 0) {
         if (fs_randomio_common(c, request->handle)) return;
@@ -569,7 +565,7 @@ fs_get_eof(struct fs_context *c)
         return;
     }
     request = (struct ec_fs_req_get_eof *)(c->req);
-    if (debug) printf("get eof [%d]\n", request->handle);
+    logdbg("get eof [%d]\n", request->handle);
     if ((h = fs_check_handle(c->client, request->handle)) != 0) {
         fd = c->client->handles[h]->fd;
         reply.status = at_eof(fd) ? 0xFF : 0;
@@ -603,8 +599,7 @@ fs_getbytes(struct fs_context *c)
         handle = request->handle;
         use_ptr = request->use_ptr;
         reply_port = c->req->urd;
-        if (debug)
-            printf("getbytes [%d, %zu%s%ju]\n",
+        logdbg("getbytes [%d, %zu%s%ju]\n",
                 request->handle, size, request->use_ptr ? "!" : "@",
                 (uintmax_t)off);
     } else {
@@ -615,8 +610,7 @@ fs_getbytes(struct fs_context *c)
         handle = request_32->handle;
         reply_port = request_32->reply_port;
         /* FIXME: Where is use_ptr in this request */
-        if (debug)
-            printf("getbytes 32 [%d, %zu@%ju]\n",
+        logdbg("getbytes 32 [%d, %zu@%ju]\n",
                 request_32->handle, size,
                 (uintmax_t)off);
     }
@@ -684,7 +678,7 @@ fs_getbyte(struct fs_context *c)
         return;
     }
     request = (struct ec_fs_req_getbyte *)(c->req);
-    if (debug) printf("getbyte [%d]\n", request->handle);
+    logdbg("getbyte [%d]\n", request->handle);
     if ((h = fs_check_handle(c->client, request->handle)) != 0) {
         if (fs_randomio_common(c, request->handle)) return;
         if (c->client->handles[h]->can_read == false)
@@ -739,8 +733,7 @@ fs_putbytes(struct fs_context *c)
         size = fs_read_val(request->nbytes, sizeof(request->nbytes));
         off = fs_read_val(request->offset, sizeof(request->offset));
         use_ptr = request->use_ptr;
-        if (debug)
-            printf("putbytes [%d, %zu%s%ju]\n",
+        logdbg("putbytes [%d, %zu%s%ju]\n",
                 request->handle, size, request->use_ptr ? "!" : "@",
                 (uintmax_t)off);
         handle = request->handle;
@@ -753,8 +746,7 @@ fs_putbytes(struct fs_context *c)
         size = fs_read_val(request_32->nbytes, sizeof(request_32->nbytes));
         off = fs_read_val(request_32->offset, sizeof(request_32->offset));
         /* FIXME: Is use_ptr used here? */
-        if (debug)
-            printf("putbytes 32 [%d, %zu@%ju]\n",
+        logdbg("putbytes 32 [%d, %zu@%ju]\n",
                 request_32->handle, size,
                 (uintmax_t)off);
         handle = request_32->handle;
@@ -783,7 +775,7 @@ fs_putbytes(struct fs_context *c)
         fd = c->client->handles[h]->fd;
         if (!use_ptr) {
             if (lseek(fd, off, SEEK_SET) == -1) {
-                if (debug) printf("Fs_file error\n");
+                logdbg("Fs_file error\n");
                 fs_errno(c);
                 return;
             }
@@ -792,11 +784,9 @@ fs_putbytes(struct fs_context *c)
         reply1.std_tx.return_code = EC_FS_RC_OK;
         reply1.data_port = OUR_DATA_PORT;
 
-        if (debug) {
-            printf("blocksize: %lu, maxsize: %d \n",
+        logdbg("blocksize: %lu, maxsize: %d \n",
                     sizeof(reply1.block_size),
                     aunfuncs->max_block);
-        }
 
         fs_write_val(reply1.block_size, aunfuncs->max_block,
                 sizeof(reply1.block_size));
@@ -804,7 +794,7 @@ fs_putbytes(struct fs_context *c)
         got = fs_data_recv(c, fd, size, ackport);
         if (got == -1) {
             /* Error */
-            if (debug) printf("got error\n");
+            logdbg("got error\n");
             fs_errno(c);
         } else {
             if (api_32) {
@@ -856,7 +846,7 @@ fs_load(struct fs_context *c)
         request = (struct ec_fs_req_load *)(c->req);
         request->path[strcspn(request->path, "\r")] = '\0';
         as_command = c->req->function == EC_FS_FUNC_LOAD_COMMAND;
-        if (debug) printf("load%s [%s]\n",
+        logdbg("load%s [%s]\n",
              as_command ? " as command" : "", request->path);
         /*
          * 8-bit clients tend to send the whole command line for "load
@@ -994,7 +984,7 @@ fs_save(struct fs_context *c)
         request = (struct ec_fs_req_save *)(c->req);
         request->path[strcspn(request->path, "\r")] = '\0';
         meta = request->meta;
-        if (debug) printf("save [%s]\n", request->path);
+        logdbg("save [%s]\n", request->path);
         size = fs_read_val(request->size, sizeof(request->size));
         upath = fs_unixify_path(c, request->path);
         ackport = c->req->urd;
@@ -1004,7 +994,7 @@ fs_save(struct fs_context *c)
         request_32 = (struct ec_fs_req_save_32 *)(c->req);
         request_32->path[strcspn(request_32->path, "\r")] = '\0';
         meta = request_32->meta;
-        if (debug) printf("save 32 [%s]\n", request_32->path);
+        logdbg("save 32 [%s]\n", request_32->path);
         size = fs_read_val(request_32->size, sizeof(request_32->size));
         upath = fs_unixify_path(c, request_32->path);
         ackport = request_32->ack_port;
@@ -1144,7 +1134,7 @@ fs_create(struct fs_context *c)
         request = (struct ec_fs_req_create *)(c->req);
         request->path[strcspn(request->path, "\r")] = '\0';
         meta = request->meta;
-        if (debug) printf("create [%s]\n", request->path);
+        logdbg("create [%s]\n", request->path);
         size = fs_read_val(request->size, sizeof(request->size));
         upath = fs_unixify_path(c, request->path);
     } else {
@@ -1153,7 +1143,7 @@ fs_create(struct fs_context *c)
         request_32 = (struct ec_fs_req_create_32 *)(c->req);
         request_32->path[strcspn(request_32->path, "\r")] = '\0';
         meta = request_32->meta;
-        if (debug) printf("create 32 [%s]\n", request_32->path);
+        logdbg("create 32 [%s]\n", request_32->path);
         size = fs_read_val(request_32->size, sizeof(request_32->size));
         upath = fs_unixify_path(c, request_32->path);
     }

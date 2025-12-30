@@ -1,6 +1,5 @@
 /*-
- * Copyright (c) 2010 Simon Tatham
- * Copyright (c) 1998, 2010 Ben Harris
+ * Copyright (c) 2025 Dylan Smith
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,47 +27,50 @@
 /*
  * This is part of aund, an implementation of Acorn Universal
  * Networking for Unix.
- */	
-
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+ *
+ * Native econet implementation for Femto board.
+ */ 
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <sys/types.h>
 
 #include "aun.h"
-#include "config.h"
+#include "extern.h"
 
-/*
- * Opaque structure holding a source address.
- */
-struct aun_srcaddr {
-	uint8_t bytes[4];
+static void
+f_econet_setup(void)
+{
+}
+
+static struct aun_packet *
+f_econet_recv(ssize_t *outsize, struct aun_srcaddr *from, int want_port)
+{
+   return NULL;
+}
+
+static ssize_t
+f_econet_xmit(struct aun_packet *pkt, size_t len, struct aun_srcaddr *to)
+{
+   return -1;
+}
+
+static char *
+f_econet_ntoa(struct aun_srcaddr *addr)
+{
+}
+
+static void
+f_econet_get_stn(struct aun_srcaddr *addr, uint8_t *out)
+{
+}
+
+const struct aun_funcs femto_econet = {
+   .max_block  = 1024,
+   .setup      = f_econet_setup,
+   .recv       = f_econet_recv,
+   .xmit       = f_econet_xmit,
+   .ntoa       = f_econet_ntoa,
+   .get_stn    = f_econet_get_stn
 };
 
-extern void print_status(struct aun_packet *, ssize_t, struct aun_srcaddr *);
-extern void print_job(struct aun_packet *, ssize_t, struct aun_srcaddr *);
-extern void conf_init(const char *);
-extern void fs_init(void);
-extern void file_server(struct aun_packet *, ssize_t, struct aun_srcaddr *);
-
-extern int debug;
-extern int using_syslog;
-extern char *beebem_cfg_file;
-extern int beebem_ingress;
-extern int default_timeout;
-extern int our_econet_addr;
-
-struct aun_funcs {
-	int max_block;
-	void (*setup)(void);
-	struct aun_packet *(*recv)(ssize_t *outsize,
-	    struct aun_srcaddr *from, int want_port);
-	ssize_t (*xmit)(struct aun_packet *pkt,
-			size_t len, struct aun_srcaddr *to);
-	char *(*ntoa)(struct aun_srcaddr *addr);
-	void (*get_stn)(struct aun_srcaddr *addr, uint8_t *out);
-};
-
-extern const struct aun_funcs *aunfuncs;

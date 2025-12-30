@@ -1,6 +1,5 @@
 /*-
- * Copyright (c) 2010 Simon Tatham
- * Copyright (c) 1998, 2010 Ben Harris
+ * Copyright (c) 2025 Dylan Smith
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,47 +27,26 @@
 /*
  * This is part of aund, an implementation of Acorn Universal
  * Networking for Unix.
- */	
+ */ 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+static void log_impl(int level, const char *fmt, va_list va);
 
-#include <stdint.h>
+void
+log_debug(const char *fmt, ...)
+{
+   va_list va;
+   va_start(va, fmt);
+   log_impl(0, fmt, va);
+   va_end(va);
+}
 
-#include "aun.h"
-#include "config.h"
-
-/*
- * Opaque structure holding a source address.
- */
-struct aun_srcaddr {
-	uint8_t bytes[4];
-};
-
-extern void print_status(struct aun_packet *, ssize_t, struct aun_srcaddr *);
-extern void print_job(struct aun_packet *, ssize_t, struct aun_srcaddr *);
-extern void conf_init(const char *);
-extern void fs_init(void);
-extern void file_server(struct aun_packet *, ssize_t, struct aun_srcaddr *);
-
-extern int debug;
-extern int using_syslog;
-extern char *beebem_cfg_file;
-extern int beebem_ingress;
-extern int default_timeout;
-extern int our_econet_addr;
-
-struct aun_funcs {
-	int max_block;
-	void (*setup)(void);
-	struct aun_packet *(*recv)(ssize_t *outsize,
-	    struct aun_srcaddr *from, int want_port);
-	ssize_t (*xmit)(struct aun_packet *pkt,
-			size_t len, struct aun_srcaddr *to);
-	char *(*ntoa)(struct aun_srcaddr *addr);
-	void (*get_stn)(struct aun_srcaddr *addr, uint8_t *out);
-};
-
-extern const struct aun_funcs *aunfuncs;
+static void 
+log_impl(int level, const char *fmt, va_list va)
+{
+   // TODO: levels etc
+   vprintf(fmt, va);
+}

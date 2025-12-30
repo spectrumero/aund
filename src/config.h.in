@@ -1,3 +1,6 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 // Location of the configuration file when installed
 #cmakedefine AUND_CONFIG "@AUND_CONFIG@"
 
@@ -5,4 +8,11 @@
 #cmakedefine FEMTO "@FEMTO@"
 
 #cmakedefine ENABLE_BEEBEM
+#cmakedefine ENABLE_AUN
+#cmakedefine ENABLE_FEMTO_ECONET
+#cmakedefine ENABLE_USERS
+#cmakedefine ENABLE_FULL_CFGFILE
+#cmakedefine ENABLE_LOGGING
+
+#endif
 

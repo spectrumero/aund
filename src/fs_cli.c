@@ -49,6 +49,7 @@
 #include "fs_errors.h"
 #include "extern.h"
 #include "fileserver.h"
+#include "log.h"
 
 typedef void fs_cmd_impl(struct fs_context *, char *);
 
@@ -119,13 +120,13 @@ fs_cli(struct fs_context *c)
 
     c->req->data[strcspn(c->req->data, "\r")] = '\0';
 
-    if (debug) printf("cli ");
+    logdbg("cli ");
     head = backup = strdup(c->req->data);
     while (strchr("* \t", *head)) head++;
     if (!*head) {
         struct ec_fs_reply reply;
 
-        if (debug) printf("[%s] -> ignore\n", c->req->data);
+        logdbg("[%s] -> ignore\n", c->req->data);
         reply.command_code = EC_FS_CC_DONE;
         reply.return_code = EC_FS_RC_OK;
         fs_reply(c, &reply, sizeof(reply));
@@ -141,19 +142,18 @@ fs_cli(struct fs_context *c)
             if (debug) {
                 if (cmd_tab[i].impl == fs_cmd_i_am ||
                     cmd_tab[i].impl == fs_cmd_pass)
-                    printf("[%.*s <hidden>]",
+                    logdbg("[%.*s <hidden>]",
     // loop and accept new connections
                         (int)(tail - backup), backup);
                 else
-                    printf("[%s]", c->req->data);
+                    logdbg("[%s]", c->req->data);
             }
             (cmd_tab[i].impl)(c, tail);
             break;
         }
     }
     if (i == NCMDS) {
-        if (debug)
-            printf("[%s]", c->req->data);
+        logdbg("[%s]", c->req->data);
         fs_cli_unrec(c, backup);
     }
     free(backup);
@@ -164,7 +164,7 @@ fs_cli_unrec(struct fs_context *c, char *cmd)
 {
     struct ec_fs_reply *reply;
 
-    if (debug) printf("[%s] -> <unrecognised>\n", cmd);
+    logdbg("[%s] -> <unrecognised>\n", cmd);
     reply = malloc(sizeof(*reply) + strlen(cmd) + 1);
     reply->command_code = EC_FS_CC_UNREC;
     reply->return_code = EC_FS_RC_OK;
@@ -270,7 +270,7 @@ fs_cmd_i_am(struct fs_context *c, char *tail)
         /* Client passed us a station number.  Skip it. */
         login = fs_cli_getarg(&tail);
     password = fs_cli_getarg(&tail);
-    if (debug) printf(" -> log on [%s]\n", login);
+    logdbg(" -> log on [%s]\n", login);
     oururd = userfuncs->validate(login, password, &opt4);
     if (!oururd) {
         fs_err(c, EC_FS_E_WRONGPW);
@@ -290,7 +290,7 @@ fs_cmd_i_am(struct fs_context *c, char *tail)
     }
     c->client->login = strdup(login);
     c->client->priv = userfuncs->get_priv(c->client->login);
-        if (debug) printf("Cli: %s has %d\n", c->client->login, c->client->priv);
+        logdbg("Cli: %s has %d\n", c->client->login, c->client->priv);
     reply.std_tx.command_code = EC_FS_CC_LOGON;
     reply.std_tx.return_code = EC_FS_RC_OK;
     /*
@@ -298,13 +298,13 @@ fs_cmd_i_am(struct fs_context *c, char *tail)
      * handle twice.
      *
     */
-    if (debug) printf("Env: URD: %s CSD: %s LIB: %s\n", oururd, oururd, lib);
+    logdbg("Env: URD: %s CSD: %s LIB: %s\n", oururd, oururd, lib);
                 
     reply.urd = fs_open_handle(c->client, oururd, O_RDONLY, false);
     reply.csd = fs_open_handle(c->client, oururd, O_RDONLY, false);
     reply.lib = fs_open_handle(c->client, lib, O_RDONLY, false);
     reply.opt4 = opt4;
-    if (debug) printf("returning: urd=%d, csd=%d, lib=%d, opt4=%d\n",
+    logdbg("returning: urd=%d, csd=%d, lib=%d, opt4=%d\n",
               reply.urd, reply.csd, reply.lib, reply.opt4);
     fs_reply(c, &(reply.std_tx), sizeof(reply));
 }
@@ -317,7 +317,7 @@ fs_cmd_priv(struct fs_context *c, char *tail)
 
     user = fs_cli_getarg(&tail);
     priv = fs_cli_getarg(&tail);
-    if (debug) printf("cli: priv request %s to '%s'\n", user, priv);
+    logdbg("cli: priv request %s to '%s'\n", user, priv);
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -346,7 +346,7 @@ fs_cmd_pass(struct fs_context *c, char *tail)
     char *oldpw, *newpw;
     oldpw = fs_cli_getarg(&tail);
     newpw = fs_cli_getarg(&tail);
-    if (debug) printf("cli: change password\n");
+    logdbg("cli: change password\n");
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -373,7 +373,7 @@ fs_cmd_cat(struct fs_context *c, char *tail)
     char *path;
 
     path = fs_cli_getarg(&tail);
-    if (debug) printf(" -> cat [%s]\n", path);
+    logdbg(" -> cat [%s]\n", path);
     reply = malloc(sizeof(*reply) + strlen(path) + 1);
     reply->command_code = EC_FS_CC_CAT;
     reply->return_code = EC_FS_RC_OK;
@@ -397,7 +397,7 @@ fs_cmd_rename(struct fs_context *c, char *tail)
 
     oldname = fs_cli_getarg(&tail);
     newname = fs_cli_getarg(&tail);
-    if (debug) printf(" -> rename [%s,%s]\n", oldname, newname);
+    logdbg(" -> rename [%s,%s]\n", oldname, newname);
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -481,7 +481,7 @@ fs_cmd_cdir(struct fs_context *c, char *tail)
     char *path;
 
     path = fs_cli_getarg(&tail);
-    if (debug) printf(" -> cdir [%s]\n", path);
+    logdbg(" -> cdir [%s]\n", path);
     if (*path)
         fs_cdir1(c, path);
     else
@@ -494,7 +494,7 @@ fs_cmd_delete(struct fs_context *c, char *tail)
     char *path;
 
     path = fs_cli_getarg(&tail);
-    if (debug) printf(" -> delete [%s]\n", path);
+    logdbg(" -> delete [%s]\n", path);
     if (*path)
         fs_delete1(c, path);
     else
@@ -507,7 +507,7 @@ fs_cmd_sdisc(struct fs_context *c, char *tail)
     struct ec_fs_reply_sdisc reply;
     char *oururd;
 
-    if (debug) printf(" -> sdisc\n");
+    logdbg(" -> sdisc\n");
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -555,7 +555,7 @@ fs_cmd_dir(struct fs_context *c, char *tail)
     upath = fs_cli_getarg(&tail);
     if (!*upath)
         upath = "&";
-    if (debug) printf(" -> dir [%s]\n", upath);
+    logdbg(" -> dir [%s]\n", upath);
     if ((upath = fs_unixify_path(c, upath)) == NULL) return;
     reply.new_handle = fs_open_handle(c->client, upath, O_RDONLY, false);
     free(upath);
@@ -586,11 +586,11 @@ fs_cmd_lib(struct fs_context *c, char *tail)
     }
     upath = fs_cli_getarg(&tail);
     if (!*upath) {
-        if (debug) printf(" -> default lib\n");
+        logdbg(" -> default lib\n");
         reply.new_handle =
             fs_open_handle(c->client, lib, O_RDONLY, false);
     } else {
-        if (debug) printf(" -> lib [%s]\n", upath);
+        logdbg(" -> lib [%s]\n", upath);
         if ((upath = fs_unixify_path(c, upath)) == NULL) return;
         reply.new_handle =
             fs_open_handle(c->client, upath, O_RDONLY, false);
@@ -622,7 +622,7 @@ fs_cmd_bye(struct fs_context *c, char *tail)
      * command synonymous with *BYE, so we make it an alias for
      * *BYE.
      */
-    if (debug) printf(" -> logoff\n");
+    logdbg(" -> logoff\n");
     fs_logoff(c);
 }
 
@@ -777,7 +777,7 @@ fs_cmd_info(struct fs_context *c, char *tail)
         return;
     }
     upath = fs_cli_getarg(&tail);
-    if (debug) printf(" -> info [%s]\n", upath);
+    logdbg(" -> info [%s]\n", upath);
     if ((upath = fs_unixify_path(c, upath)) == NULL) return;
 
     path_argv[0] = upath;
@@ -828,7 +828,7 @@ fs_cmd_save(struct fs_context *c, char *tail)
         exec = strtoul(p, NULL, 16);
     else
         exec = start;
-    if (debug) printf(" -> save [%08x, %08x, %06x, %s]\n",
+    logdbg(" -> save [%08x, %08x, %06x, %s]\n",
         start, exec, end - start, path);
     fs_write_val(reply->meta.load_addr, start,
         sizeof(reply->meta.load_addr));
@@ -866,10 +866,10 @@ fs_cmd_load(struct fs_context *c, char *tail)
         reply->load_addr_found = 0;
     }
     if (debug) {
-        printf(" -> load [");
+        logdbg(" -> load [");
         if (reply->load_addr_found)
-            printf("%08x, ", addr);
-        printf("%s]\n", path);
+            logdbg("%08x, ", addr);
+        logdbg("%s]\n", path);
     }
     fs_write_val(reply->load_addr, addr, sizeof(reply->load_addr));
     strcpy(reply->path, path);
@@ -962,7 +962,7 @@ fs_cmd_access(struct fs_context *c, char *tail)
         return;
     }
 
-    if (debug) printf("\nAccess File [%s] -> permissions [%s]\n", name, access);
+    logdbg("\nAccess File [%s] -> permissions [%s]\n", name, access);
     // FIXME:
     // Bug here *ACCESS "" WR/R is permitted
     
@@ -1137,7 +1137,7 @@ fs_cmd_access(struct fs_context *c, char *tail)
         }
     }
 
-    if (debug) printf(" -> name [%s], permissons [%s]\n", name, access);
+    logdbg(" -> name [%s], permissons [%s]\n", name, access);
     reply.command_code = EC_FS_CC_DONE; 
     reply.return_code = EC_FS_RC_OK;
     fs_reply(c, &reply, sizeof(reply));
@@ -1181,7 +1181,7 @@ fs_cmd_newuser(struct fs_context *c, char *tail)
 
     if (user_exists == true) 
     {
-        if (debug) printf("User exists was true\n");
+        logdbg("User exists was true\n");
         fs_err(c, EC_FS_E_USEREXIST);
         return;
     }
@@ -1190,7 +1190,7 @@ fs_cmd_newuser(struct fs_context *c, char *tail)
 
     if (username == NULL)
     {
-        if (debug) printf("User was null\n");
+        logdbg("User was null\n");
         fs_err(c, EC_FS_E_BADUSER);
         return;
     }
@@ -1199,7 +1199,7 @@ fs_cmd_newuser(struct fs_context *c, char *tail)
 
     if (strlen(username) > 21)
     {
-        if (debug) printf("Username was too long\n");
+        logdbg("Username was too long\n");
         fs_err(c, EC_FS_E_BADUSER);
         return;
     }
@@ -1247,7 +1247,7 @@ fs_cmd_deluser(struct fs_context *c, char *tail)
     }
 
     // Check if new user already exists
-    if (debug) printf("Check if the user already exists\n");
+    logdbg("Check if the user already exists\n");
     user_exists = userfuncs->is_user(username);
 
     if (user_exists == false)

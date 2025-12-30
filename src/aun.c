@@ -50,6 +50,7 @@
 #include "aun.h"
 #include "extern.h"
 #include "version.h"
+#include "log.h"
 
 static void aun_ack(int sock, struct aun_packet *pkt, struct sockaddr_in *from,
     int);
@@ -118,7 +119,7 @@ aun_recv(ssize_t *outsize, struct aun_srcaddr *vfrom, int want_port)
                         == -1) {
                     err(1, "sendto(echo reply)");
                 }
-                if (debug) printf(" (echo request)");
+                logdbg(" (echo request)");
             }
             break;
         case AUN_TYPE_UNICAST:

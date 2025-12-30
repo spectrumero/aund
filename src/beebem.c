@@ -55,6 +55,7 @@
 #include "extern.h"
 #include "fileserver.h"
 #include "version.h"
+#include "log.h"
 
 struct econet_addr {
     uint8_t station;
@@ -221,8 +222,8 @@ static ssize_t beebem_listen(unsigned *addr, int forever)
             from.sin_addr.s_addr != ec2ip[their_addr].addr.s_addr ||
             (beebem_ingress &&
              ntohs(from.sin_port) != ec2ip[their_addr].port)) {
-            if (debug)
-                printf("failed ingress filter from %s:%d "
+
+             logdbg("failed ingress filter from %s:%d "
                     "(claimed to be %d.%d)\n",
                     inet_ntoa(from.sin_addr),
                     ntohs(from.sin_port),
@@ -261,8 +262,8 @@ static void beebem_send(const void *data, ssize_t len)
                 && (errno != 64)
                 && (errno != ETIMEDOUT))
             {
-                if (debug) printf("Error number was [%d]\n", errno);
-                if (debug) printf("Sending to station [%u]\n", ecaddr);
+                logdbg("Error number was [%d]\n", errno);
+                logdbg("Sending to station [%u]\n", ecaddr);
             }
             if ((errno != EHOSTUNREACH)
                 && (errno != 64)
@@ -334,8 +335,7 @@ beebem_recv(ssize_t *outsize, struct aun_srcaddr *vfrom, int want_port)
              (afrom->eaddr.network != (scoutaddr >> 8) ||
               afrom->eaddr.station != (scoutaddr & 0xFF))) ||
             (want_port && want_port != rbuf[PKTOFF+5])) {
-            if (debug)
-                printf("ignoring packet from %d.%d for port"
+            logdbg("ignoring packet from %d.%d for port"
                        " %d during other transaction\n",
                        scoutaddr>>8, scoutaddr&0xFF,
                        rbuf[PKTOFF+5]);
@@ -344,8 +344,7 @@ beebem_recv(ssize_t *outsize, struct aun_srcaddr *vfrom, int want_port)
         }
 
         if (msgsize != 6) {
-            if (debug)
-                printf("received wrong-size scout packet "
+           logdbg("received wrong-size scout packet "
                     "(%zd) from %d.%d\n",
                     msgsize, scoutaddr>>8, scoutaddr&0xFF);
             if (!forever) count--;
@@ -372,8 +371,7 @@ beebem_recv(ssize_t *outsize, struct aun_srcaddr *vfrom, int want_port)
             msgsize = beebem_listen((unsigned int *) &mainaddr, 0);
             if (msgsize != 0) {
                 if (mainaddr != scoutaddr) {
-                    if (debug)
-                        printf("ignoring packet from"
+                        logdbg("ignoring packet from"
                                " %d.%d during other"
                                " transaction\n",
                                mainaddr>>8,
@@ -385,8 +383,7 @@ beebem_recv(ssize_t *outsize, struct aun_srcaddr *vfrom, int want_port)
         } while (count > 0 && msgsize == 0);
 
         if (msgsize == 0) {
-            if (debug)
-                printf("received scout from %d.%d but "
+                logdbg("received scout from %d.%d but "
                        "payload packet never arrived\n",
                        scoutaddr>>8, scoutaddr&0xFF);
             continue;
@@ -426,8 +423,7 @@ beebem_xmit(struct aun_packet *spkt, size_t len, struct aun_srcaddr *vto)
     ssize_t msgsize, payloadlen;
 
     if (len > sizeof(sbuf) - 4) {
-        if (debug)
-            printf("outgoing packet too large (%zu)\n", len);
+        logdbg("outgoing packet too large (%zu)\n", len);
         return -1;
     }
 
@@ -452,8 +448,7 @@ beebem_xmit(struct aun_packet *spkt, size_t len, struct aun_srcaddr *vto)
              * right address.
              */
             if (ackaddr != theiraddr) {
-                if (debug)
-                    printf("ignoring packet from %d.%d"
+                    logdbg("ignoring packet from %d.%d"
                            " during other transaction\n",
                            ackaddr>>8, ackaddr&0xFF);
                 msgsize = 0;   /* so we'll go round again */
@@ -463,16 +458,14 @@ beebem_xmit(struct aun_packet *spkt, size_t len, struct aun_srcaddr *vto)
     } while (count > 0 && msgsize == 0);
 
     if (msgsize == 0) {
-        if (debug)
-            printf("scout ack never arrived from "
+        logdbg("scout ack never arrived from "
                 "%d.%d\n", theiraddr>>8, theiraddr&0xFF);
         errno = ETIMEDOUT;
         return -1;
     }
 
     if (msgsize != 4) {
-        if (debug)
-            printf("received wrong-size ack packet (%zd) from "
+        logdbg("received wrong-size ack packet (%zd) from "
                 "%d.%d\n",
                 msgsize, theiraddr>>8, theiraddr&0xFF);
         return -1;
@@ -498,8 +491,7 @@ beebem_xmit(struct aun_packet *spkt, size_t len, struct aun_srcaddr *vto)
              * have come from the right address.
              */
             if (ackaddr != theiraddr) {
-                if (debug)
-                    printf("ignoring packet from %d.%d"
+                logdbg("ignoring packet from %d.%d"
                            " during other transaction\n",
                            ackaddr>>8, ackaddr&0xFF);
                 msgsize = 0;   /* so we'll go round again */
@@ -509,16 +501,14 @@ beebem_xmit(struct aun_packet *spkt, size_t len, struct aun_srcaddr *vto)
     } while (count > 0 && msgsize == 0);
 
     if (msgsize == 0) {
-        if (debug)
-            printf("payload ack never arrived from "
+        logdbg("payload ack never arrived from "
                 "%d.%d\n", theiraddr>>8, theiraddr&0xFF);
         errno = ETIMEDOUT;
         return -1;
     }
 
     if (msgsize != 4) {
-        if (debug)
-            printf("received wrong-size ack packet (%zd) "
+       logdbg("received wrong-size ack packet (%zd) "
                 "from %d.%d\n",
                 msgsize, theiraddr>>8, theiraddr&0xFF);
         return -1;

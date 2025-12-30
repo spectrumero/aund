@@ -54,6 +54,7 @@
 
 #include "extern.h"
 #include "fileserver.h"
+#include "log.h"
 
 char *pwfile = NULL;
 char *pwtmp = NULL;
@@ -195,7 +196,7 @@ pw_validate(char *user, const char *pw, int *opt4)
                 ret = NULL;
             else
                 ret = strdup(d);
-            if (debug) printf("urd is [%s]\n", ret);    
+            logdbg("urd is [%s]\n", ret);    
             strcpy(user, u);   /* normalise case */
             pw_close();
             return ret;

@@ -1,5 +1,4 @@
 set(SOURCE_FILES
-   src/aun.c
    src/aund.c
    src/fileserver.c
    src/fs_cli.c
@@ -18,12 +17,24 @@ if(ENABLE_BEEBEM)
    list(APPEND SOURCE_FILES src/beebem.c)
 endif()
 
+if(ENABLE_AUN)
+   list(APPEND SOURCE_FILES src/aun.c)
+endif()
+
+if(ENABLE_FEMTO_ECONET)
+   list(APPEND SOURCE_FILES src/femto_econet.c)
+endif()
+
 if(ENABLE_FULL_CFGFILE)
    list(APPEND SOURCE_FILES src/conf_lex.c)
 endif()
 
 if(ENABLE_USERS)
    list(APPEND SOURCE_FILES src/pw.c)
+endif()
+
+if(ENABLE_LOGGING)
+   list(APPEND SOURCE_FILES src/log.c)
 endif()
 
 # This adds a path to the generated config.h

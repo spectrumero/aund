@@ -44,6 +44,7 @@
 #include "extern.h"
 #include "fileserver.h"
 #include "fs_errors.h"
+#include "log.h"
 
 static int fs_examine_read(struct fs_context *, const char *, int);
 
@@ -78,8 +79,7 @@ fs_examine(struct fs_context *c)
     }
 
     request->path[strcspn(request->path, "\r")] = '\0';
-    if (debug)
-        printf("examine [%d, %d/%d, {%s}]\n",
+    logdbg("examine [%d, %d/%d, {%s}]\n",
             request->arg, request->start, request->nentries,
             request->path);
     if (c->client == NULL) {
@@ -201,11 +201,10 @@ fs_examine_read(struct fs_context *c, const char *upath, int start)
         /* Already cached */
         /* XXX this should see how recent the cache is */
         /* XXX Won't spot if the client skipped a bit of a listing */
-        if (debug) printf("cache HIT!\n");
+        logdbg("cache HIT!\n");
         return 0;
     }
-    if (debug)
-        printf("cache miss.  wanted %d; found %d.\n", start, dc->start);
+    logdbg("cache miss.  wanted %d; found %d.\n", start, dc->start);
     if (dc->ftsp)
         /* Dispose of old FTS structure */
         fts_close(dc->ftsp);

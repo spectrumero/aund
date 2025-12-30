@@ -52,6 +52,7 @@
 #include "extern.h"
 #include "fileserver.h"
 #include "version.h"
+#include "log.h"
 
 void
 fs_get_discs(struct fs_context *c)
@@ -61,7 +62,7 @@ fs_get_discs(struct fs_context *c)
         (struct ec_fs_req_get_discs *)(c->req);
     int nfound;
 
-    if (debug) printf("get discs [%d/%d]\n",
+    logdbg("get discs [%d/%d]\n",
         request->sdrive, request->ndrives);
     if (request->sdrive == 0 && request->ndrives > 0)
         nfound = 1;
@@ -97,7 +98,7 @@ fs_get_info(struct fs_context *c)
     }
     request = (struct ec_fs_req_get_info *)c->req;
     request->path[strcspn(request->path, "\r")] = '\0';
-    if (debug) printf("get info [%d, '%s']\n", request->arg, request->path);
+    logdbg("get info [%d, '%s']\n", request->arg, request->path);
     upath = fs_unixify_path(c, request->path); /* This must be freed */
     if (upath == NULL) return;
     errno = 0;
@@ -290,7 +291,7 @@ fs_set_info(struct fs_context *c)
         return;
     }
     request = (struct ec_fs_req_set_info *)c->req;
-    if (debug) printf("set info [%d, ", request->arg);
+    logdbg("set info [%d, ", request->arg);
     switch (request->arg) {
     case EC_FS_SET_INFO_ALL: {
         struct ec_fs_req_set_info_all *req2 =
@@ -328,25 +329,25 @@ fs_set_info(struct fs_context *c)
         break;
     }
     default:
-        if (debug) printf("]\n");
+        logdbg("]\n");
         fs_err(c, EC_FS_E_BADINFO);
         return;
     }
 
     if (debug) {
         if (set_load)
-            printf("%02x%02x%02x%02x, ",
+            logdbg("%02x%02x%02x%02x, ",
                 meta_in.load_addr[0], meta_in.load_addr[1],
                 meta_in.load_addr[2], meta_in.load_addr[3]);
         if (set_exec)
-            printf("%02x%02x%02x%02x, ",
+            logdbg("%02x%02x%02x%02x, ",
                 meta_in.exec_addr[0], meta_in.exec_addr[1],
                 meta_in.exec_addr[2], meta_in.exec_addr[3]);
         if (set_access)
-            printf("%02x, ", access);
+            logdbg("%02x, ", access);
     }
     path[strcspn(path, "\r")] = '\0';
-    if (debug) printf("%s]\n", path);
+    logdbg("%s]\n", path);
 
     upath = fs_unixify_path(c, path); /* This must be freed */
     if (upath == NULL) return;
@@ -399,7 +400,7 @@ fs_get_uenv(struct fs_context *c)
     struct ec_fs_reply_get_uenv reply;
     char tmp[11];
 
-    if (debug) printf("get user environment\n");
+    logdbg("get user environment\n");
     reply.std_tx.command_code = EC_FS_CC_DONE;
     reply.std_tx.return_code = EC_FS_RC_OK;
     reply.discnamelen = sizeof(reply.csd_discname);
@@ -444,7 +445,7 @@ fs_cat_header(struct fs_context *c)
 
     request = (struct ec_fs_req_cat_header *)c->req;
     request->path[strcspn(request->path, "\r")] = '\0'; 
-    if (debug) printf("catalogue header [%s]\n", request->path);
+    logdbg("catalogue header [%s]\n", request->path);
     upath = fs_unixify_path(c, request->path); /* This must be freed */
     if (upath == NULL) return;
     errno = 0;
@@ -505,7 +506,7 @@ fs_logoff(struct fs_context *c)
 {
     struct ec_fs_reply reply;
 
-    if (debug) printf ("log off\n");
+    logdbg("log off\n");
     if (c->client != NULL)
         fs_delete_client(c->client);
     reply.command_code = EC_FS_CC_DONE;
@@ -527,8 +528,7 @@ fs_get_users_on(struct fs_context *c)
         return;
     }
     request = (struct ec_fs_req_get_users_on *)(c->req);
-    if (debug)
-        printf("users on [%d/%d]\n", request->start, request->nusers);
+    logdbg("users on [%d/%d]\n", request->start, request->nusers);
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -582,7 +582,7 @@ fs_get_user(struct fs_context *c)
 
     request = (struct ec_fs_req_get_user *)(c->req);
     request->user[strcspn(request->user, "\r")] = '\0';
-    if (debug) printf("get user info [%s]\n", request->user);
+    logdbg("get user info [%s]\n", request->user);
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -608,7 +608,7 @@ fs_delete(struct fs_context *c)
 
     request = (struct ec_fs_req_delete *)(c->req);
     request->path[strcspn(request->path, "\r")] = '\0';
-    if (debug) printf("delete [%s]\n", request->path);
+    logdbg("delete [%s]\n", request->path);
     fs_delete1(c, request->path);
 }
 
@@ -726,7 +726,7 @@ fs_cdirn(struct fs_context *c)
     }
     request = (struct ec_fs_req_cdirn *)(c->req);
     request->path[strcspn(request->path, "\r")] = '\0';
-    if (debug) printf("cdirn [%s]\n", request->path);
+    logdbg("cdirn [%s]\n", request->path);
     fs_cdir1(c, request->path);
 }
 
@@ -770,7 +770,7 @@ fs_set_opt4(struct fs_context *c)
 
     request = (struct ec_fs_req_set_opt4 *)(c->req);
     opt4 = request->opt4 & 0xF;
-    if (debug) printf(" -> set boot option [%d]\n", opt4);
+    logdbg(" -> set boot option [%d]\n", opt4);
     if (c->client == NULL) {
         fs_err(c, EC_FS_E_WHOAREYOU);
         return;
@@ -797,7 +797,7 @@ fs_get_time(struct fs_context *c)
      * call to logged-in users.
      */
 
-    if (debug) printf(" -> get time\n");
+    logdbg(" -> get time\n");
 
     t = time(NULL);
     fs_write_date(&(reply.date), t);
@@ -824,7 +824,7 @@ fs_get_version(struct fs_context *c)
      * call to logged-in users.
      */
 
-    if (debug) printf(" -> get version\n");
+    logdbg(" -> get version\n");
 
     reply.reply.std_tx.command_code = EC_FS_CC_DONE;
     reply.reply.std_tx.return_code = EC_FS_RC_OK;
@@ -856,7 +856,7 @@ fs_get_disc_free(struct fs_context *c)
 
     request = (struct ec_fs_req_get_disc_free *)(c->req);
     request->discname[strcspn(request->discname, "\r")] = '\0';
-    if (debug) printf("get disc free [%s]", request->discname);
+    logdbg("get disc free [%s]", request->discname);
     /*
      * XXX To support multiple discs, we might want to look at
      * the disc name passed in and resolve it to a Unix path.
@@ -889,7 +889,7 @@ fs_get_user_free(struct fs_context *c)
 
     request = (struct ec_fs_req_get_user_free *)(c->req);
     request->username[strcspn(request->username, "\r")] = '\0';
-    if (debug) printf("get user free [%s]", request->username);
+    logdbg("get user free [%s]", request->username);
     /*
      * XXX In an ideal world, we might look at quotas here, but in
      * an ideal world there'd be a standardised way of doing that.
