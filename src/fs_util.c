@@ -167,6 +167,7 @@ fs_write_val(uint8_t *p, uint64_t value, size_t len)
     }
 }
 
+#ifndef FEMTO
 /*
  * Construct path to Acorn metadata for a file.  The caller must free the
  * returned string itself.
@@ -190,14 +191,29 @@ fs_metapath(FTSENT *f)
     }
     return metapath;
 }
+#endif
 
 void
 fs_get_meta(FTSENT *f, struct ec_fs_meta *meta)
 {
     struct stat *st;
-    char *metapath, rawinfo[24];
     uint64_t stamp;
-    int type, i, ret;
+    int type;
+#ifdef FEMTO
+    /*
+     * FatFS has no symbolic links: the femto fts read the metadata
+     * from the directory's metadata file along with the stat info.
+     */
+    if (f->fts_meta.flags & FEMTO_META_ADDRS) {
+        memcpy(meta->load_addr, f->fts_meta.load_addr,
+            sizeof(meta->load_addr));
+        memcpy(meta->exec_addr, f->fts_meta.exec_addr,
+            sizeof(meta->exec_addr));
+        return;
+    }
+#else
+    char *metapath, rawinfo[24];
+    int i, ret;
 
     metapath = fs_metapath(f);
     if (metapath != NULL) {
@@ -224,6 +240,7 @@ fs_get_meta(FTSENT *f, struct ec_fs_meta *meta)
         }
         free(metapath);
     }
+#endif
     st = f->fts_statp;
     if (st != NULL) {
         stamp = fs_riscos_date(st->st_mtime,
@@ -245,6 +262,30 @@ fs_get_meta(FTSENT *f, struct ec_fs_meta *meta)
     }
 }
 
+#ifdef FEMTO
+bool
+fs_set_meta(FTSENT *f, struct ec_fs_meta *meta)
+{
+    struct femto_meta m;
+
+    memcpy(m.load_addr, meta->load_addr, sizeof(m.load_addr));
+    memcpy(m.exec_addr, meta->exec_addr, sizeof(m.exec_addr));
+    m.flags = FEMTO_META_ADDRS;
+    if (femto_meta_set(f->fts_accpath, &m) < 0)
+        return false;
+    memcpy(f->fts_meta.load_addr, m.load_addr, sizeof(m.load_addr));
+    memcpy(f->fts_meta.exec_addr, m.exec_addr, sizeof(m.exec_addr));
+    f->fts_meta.flags |= FEMTO_META_ADDRS;
+    return true;
+}
+
+void
+fs_del_meta(FTSENT *f)
+{
+
+    femto_meta_del(f->fts_accpath);
+}
+#else
 bool
 fs_set_meta(FTSENT *f, struct ec_fs_meta *meta)
 {
@@ -296,6 +337,7 @@ fs_del_meta(FTSENT *f)
         free(metapath);
     }
 }
+#endif
 
 /*
  * Return the System Internal Name for a file.  This is only 24 bits long

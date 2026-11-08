@@ -442,11 +442,9 @@ fs_cmd_rename(struct fs_context *c, char *tail)
             }
         }
     if (rename(oldupath, newupath) < 0) {
-        free(oldupath);
-        free(newupath);
-        fts_close(ftsp);
+        /* The paths are freed below */
         fs_errno(c);
-        // Do not need to return here
+        fts_close(ftsp);
     } else {
         fs_get_meta(f, &meta);
         fs_del_meta(f);
@@ -725,11 +723,11 @@ fs_long_info(struct fs_context *c, char *string, FTSENT *f)
                 fs_read_val(meta.load_addr, sizeof(meta.load_addr));
             exec =
                 fs_read_val(meta.exec_addr, sizeof(meta.exec_addr));
-            sprintf(string, "%-10.10s %08lX %08lX     %06jX "
+            sprintf(string, "%-10.10s %08lX %08lX     %06lX "
                 "%-6.6s  %02d%.3s%02d %02d%.3s%02d %02d:%02d "
                 "000 (000)\r\x80",
                 acornname, load, exec,
-                (uintmax_t)f->fts_statp->st_size, accstring,
+                (unsigned long)f->fts_statp->st_size, accstring,
                 btm.tm_mday,
                 &months[ 3*btm.tm_mon],
                 btm.tm_year % 100,
@@ -750,10 +748,10 @@ fs_long_info(struct fs_context *c, char *string, FTSENT *f)
         fs_get_meta(f, &meta);
         load = fs_read_val(meta.load_addr, sizeof(meta.load_addr));
         exec = fs_read_val(meta.exec_addr, sizeof(meta.exec_addr));
-        sprintf(string, "%-10.10s %08lX %08lX   %06jX   "
+        sprintf(string, "%-10.10s %08lX %08lX   %06lX   "
             "%-6.6s     %02d:%02d:%02d %06x\r\x80",
             acornname, load, exec,
-            (uintmax_t)f->fts_statp->st_size, accstring,
+            (unsigned long)f->fts_statp->st_size, accstring,
             btm.tm_mday,
             btm.tm_mon,
             btm.tm_year % 100,

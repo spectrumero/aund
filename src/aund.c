@@ -78,9 +78,12 @@ int default_fsstation = 254;
 
 volatile int painful_death = 0;
 
+#ifndef FEMTO
 static void sig_init(void);
 static void sigcatcher(int);
+#endif
 
+#ifndef FEMTO
 static void
 usage(void)
 {
@@ -88,7 +91,9 @@ usage(void)
     fprintf(stderr, "usage: %s [-dDfsS] [-c config]\n", progname);
     exit(EXIT_FAILURE);
 }
+#endif
 
+#ifndef FEMTO
 static char const *curpidfile;
 
 static void
@@ -113,13 +118,20 @@ dopidfile(char const *pidfile)
     curpidfile = pidfile;
     atexit(unpidfile);
 }
+#endif
 
 int
 main(int argc, char *argv[])
 {
+#ifdef AUND_CONFIG
     char const *conffile = AUND_CONFIG;
+#else
+    char const *conffile = NULL;
+#endif
+#ifndef FEMTO
     char const *pidfile = "/var/run/aund.pid";
     int c;
+#endif
     #ifdef __APPLE__
     pid_t child_pid;
     #endif
@@ -127,6 +139,8 @@ main(int argc, char *argv[])
     int override_syslog = -1;
 
     progname = argv[0];
+#ifndef FEMTO
+    /* None of the options mean anything on the FileStick */
     while ((c = getopt(argc, argv, "c:dDfp:sS")) != -1) {
         switch (c) {
         case '?':
@@ -153,10 +167,13 @@ main(int argc, char *argv[])
             break;
         }
     }
+#endif
 
+#ifndef FEMTO
     sig_init();
-#ifdef ENABLE_FULL_CFGFILE
-    // TODO: abbreviated config file
+#endif
+#if defined(ENABLE_FULL_CFGFILE) || defined(FEMTO)
+    /* The femto build's configuration is fixed, in femto_config.c */
     conf_init(conffile);
 #endif
 #ifdef ENABLE_BEEBEM
@@ -187,6 +204,8 @@ main(int argc, char *argv[])
     if (chdir(root) < 0)
         err(1, "%s: chdir", root);
 
+#ifndef FEMTO
+    /* On the FileStick, aund is just a program run from the shell */
     if (!(debug || foreground)) {
     #ifdef __APPLE__
         if (posix_spawn(&child_pid, root, NULL, NULL, NULL, NULL) !=0)
@@ -203,6 +222,7 @@ main(int argc, char *argv[])
         syslog(LOG_NOTICE, "started");
     }
     dopidfile(pidfile);
+#endif
 #ifdef ENABLE_BEEBEM
     logdbg("started as fileserver at station [%d]\n", our_econet_addr);
 #endif
@@ -229,6 +249,7 @@ main(int argc, char *argv[])
     return 0;
 }
 
+#ifndef FEMTO
 static void
 sig_init(void)
 {
@@ -246,3 +267,4 @@ sigcatcher(int s)
 
     painful_death = 1;
 }
+#endif

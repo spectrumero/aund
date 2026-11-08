@@ -52,6 +52,7 @@ struct aun_packet {
 #define AUN_MAX_BLOCK 1024
 
 #define EC_PORT_FS 0x99
+#define EC_PORT_FS_DATA 0x97	/* where clients send SAVE/PUTBYTES data */
 #define EC_PORT_PS_STATUS_ENQ 0x9f
 #define EC_PORT_PS_STATUS_REPLY 0x9e
 #define EC_PORT_PS_JOB	0xd1

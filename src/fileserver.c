@@ -62,6 +62,8 @@ struct user_funcs const * userfuncs;
 void
 fs_init(void)
 {
+#ifndef FEMTO
+    /* The femto build has no host name; femto_config.c sets discname */
     char fullname[MAXHOSTNAMELEN];
 
     if (gethostname(fullname, MAXHOSTNAMELEN) == -1)
@@ -73,6 +75,7 @@ fs_init(void)
     else
         fullname[MAXHOSTNAMELEN - 1] = '\0'; /* paranoia */
     strcpy(discname, fullname);
+#endif
 #ifdef ENABLE_USERS
     if (!fixedurd && !pwfile)
         errx(1,

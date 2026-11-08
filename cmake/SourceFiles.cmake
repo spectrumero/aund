@@ -25,6 +25,16 @@ if(ENABLE_FEMTO_ECONET)
    list(APPEND SOURCE_FILES src/femto_econet.c)
 endif()
 
+if(FEMTO)
+   # Hard coded configuration, and the POSIX functions the FileStick lacks
+   set(FEMTO_COMPAT_FILES
+      src/femto/compat.c
+      src/femto/fts.c
+      src/femto/meta.c
+   )
+   list(APPEND SOURCE_FILES src/femto_config.c ${FEMTO_COMPAT_FILES})
+endif()
+
 if(ENABLE_FULL_CFGFILE)
    list(APPEND SOURCE_FILES src/conf_lex.c)
 endif()

@@ -55,7 +55,7 @@
 #include "fileserver.h"
 #include "log.h"
 
-#define OUR_DATA_PORT 0x97
+#define OUR_DATA_PORT EC_PORT_FS_DATA
 
 static ssize_t fs_data_send(struct fs_context *, int, size_t, uint8_t);
 static ssize_t fs_data_recv(struct fs_context *, int, size_t, int);

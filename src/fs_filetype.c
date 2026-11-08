@@ -32,12 +32,16 @@
  * fs_filetype.c - guessing RISC OS file types
  */
 
+#include "config.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/queue.h>
 
 #include <errno.h>
+#ifdef ENABLE_FULL_CFGFILE
 #include <regex.h>
+#endif
 #include <stdlib.h>
 
 #include "extern.h"
@@ -56,7 +60,9 @@ struct fs_typemap {
     TAILQ_ENTRY(fs_typemap) link;
     enum fs_map_kind kind;
     union {
+#ifdef ENABLE_FULL_CFGFILE
         regex_t *name_re;
+#endif
         struct {
             mode_t val;
             mode_t mask;
@@ -98,14 +104,17 @@ bool fs_check_typemap(FTSENT *f, struct fs_typemap *map)
         return (f->fts_statp->st_mode & map->crit.mode.mask) ==
             map->crit.mode.val;
     case FS_MAP_NAME:
+#ifdef ENABLE_FULL_CFGFILE
         if (regexec(map->crit.name_re, f->fts_name, 0, NULL, 0) == 0)
             return true;
-        else
-            return false;
+#endif
+        return false;
     }
     return false;
 }
 
+#ifdef ENABLE_FULL_CFGFILE
+/* Name typemaps (regular expressions) can only come from aund.conf */
 int
 fs_add_typemap_name(const char *re, int type)
 {
@@ -135,6 +144,7 @@ fs_add_typemap_name(const char *re, int type)
     TAILQ_INSERT_TAIL(&typemap, newmap, link);
     return 0;
 }
+#endif
 
 int
 fs_add_typemap_mode(mode_t val, mode_t mask, int type)

@@ -33,6 +33,30 @@ cmake --install build
 The install step will install into the install prefix, under bin, man/man5, man/man8
 and etc (for aund.conf).
 
+### FileStick (femto) build
+
+To build aund for the FileStick, with aund checked out as a submodule of the
+FileStick tree, and the FileStick tree already built (for `build/lib/libfilestick.a`):
+
+```
+cmake -B build-femto -D AUND_BUILD=femto -D CMAKE_BUILD_TYPE=Release
+cmake --build build-femto
+```
+
+This gives `build-femto/aund.elf`. Copy it to the FileStick and run it from the
+shell. It serves the directory `/aund`, which must exist, as station number
+set by `configure netstation`. Use `-D FILESTICK_DIR=...` if the FileStick tree
+is somewhere other than the parent directory.
+
+The femto build has no configuration file: `src/femto_config.c` sets the
+configuration. FatFS has no symbolic links or permissions, so load and exec
+addresses and access are kept in a file called `.aundmeta` in each directory
+(see `src/femto/include/meta.h`), not in `.Acorn` directories. `src/femto`
+provides the parts of POSIX aund needs that the FileStick doesn't have.
+
+Not supported on the FileStick: `*FREE` (disc free space), and shortening an
+open file by setting its extent.
+
 ## Notes
 
 aund is not particularly portable, and expects a BSDish or GNUish C library.
