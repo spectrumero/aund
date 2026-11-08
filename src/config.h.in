@@ -6,3 +6,5 @@
 
 #cmakedefine ENABLE_BEEBEM
 
+
+#cmakedefine ENABLE_FULL_CFGFILE
