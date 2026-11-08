@@ -16,3 +16,5 @@
 
 #endif
 
+
+#cmakedefine ENABLE_FULL_CFGFILE
